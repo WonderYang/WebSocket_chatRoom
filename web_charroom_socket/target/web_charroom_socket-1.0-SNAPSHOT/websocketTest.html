@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>websocket demo</title>
+</head>
+<body>
+    请输入要发送的信息:
+    <input type="text" id="text">
+    <!--按钮，onclick为一个点击事件-->
+    <button onclick="sendMsg2Server()">发送信息</button>
+    <!--换行，有一个水平线，而</br>没有水平线的换行-->
+    <hr>
+    收到服务端信息为:
+    <div id="read_from_server"></div>
+    <hr>
+    <button onclick="closeWebSocket()">关闭websocket</button>
+
+    <script>
+        var websocket = null;
+        // 不是所有的浏览器都支持webSocket，所以判断一下（大多数都支持）
+        if ('WebSocket' in window) {   //如果WebSocket对象存在于浏览器窗口对象中的话就代表支持
+            console.log("支持webcoket!");
+            // 参数为后端websocket地址，注意端口号不要填错
+            websocket = new WebSocket("ws://localhost:808/websocket");
+        }else {
+            alert("浏览器不支持websocket!");
+        }
+
+        // 浏览器与服务端建立链接后就会调用这个方法
+        websocket.onopen = function() {
+            console.log("websocket连接成功");
+        };
+        // 建立websocket失败后会调用这个方法
+        websocket.onerror = function() {
+            console.log("websocket连接失败");
+        };
+        // 当浏览器收到服务器信息，就会调用这个方法；
+        websocket.onmessage = function (event) {
+            var msg = event.data;
+            flushDiv(msg);
+        };
+        // websocket关闭
+        websocket.onclose = function () {
+            closeWebSocket();
+        };
+        // 窗口关闭，主动将当前窗口websocket关闭
+        window.onbeforeunload = function () {
+            closeWebSocket();
+        };
+
+
+        // 将浏览器信息发送到服务端
+        function sendMsg2Server() {
+            //获取html页面上的文本框的内容；
+            var msg = document.getElementById("text").value;
+            websocket.send(msg);
+        }
+        // 刷新当前div
+        function flushDiv(msg) {
+            document.getElementById("read_from_server").innerText = msg;
+        }
+        function closeWebSocket() {
+            websocket.close();
+        }
+
+    </script>
+</body>
+</html>
